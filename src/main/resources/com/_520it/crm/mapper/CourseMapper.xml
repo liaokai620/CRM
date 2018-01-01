@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.CourseMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Course" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="state" property="state" />
+    <result column="remark" property="remark" />
+    <result column="schoolTime" property="schoolTime" />
+
+    <association property="grade" javaType="com._520it.crm.domain.Grade" columnPrefix="gra_">
+      <id property="id" column="id"/>
+      <result property="name" column="name"/>
+    </association>
+
+    <association property="classTeacher" javaType="com._520it.crm.domain.Employee" columnPrefix="emp_">
+      <id property="id" column="id"/>
+      <result property="username" column="username"/>
+    </association>
+
+    <association property="classroom" javaType="com._520it.crm.domain.Classroom" columnPrefix="cr_">
+      <id property="id" column="id"/>
+      <result property="name" column="name"/>
+    </association>
+
+    <association property="teacher" javaType="com._520it.crm.domain.Employee" columnPrefix="empl_">
+      <id property="id" column="id"/>
+      <result property="username" column="username"/>
+    </association>
+
+  </resultMap>
+  <delete id="deleteByPrimaryKey" >
+    delete from course
+    where id = #{id}
+  </delete>
+  <insert id="insert"  useGeneratedKeys="true" keyProperty="id" >
+    insert into course (name, class_Id, classTeacher_id, schoolTime, classroom_Id, teacher_Id, 
+      state, remark)
+    values (#{name}, #{grade.id}, #{classTeacher.id}, #{schoolTime}, #{classroom.id}, #{teacher.id},
+      0, #{remark})
+  </insert>
+    <!--上传课程表的数据处理-->
+    <insert id="insertForm">
+
+    </insert>
+    <insert id="upload">
+      insert into course (name, class_Id, classTeacher_id, schoolTime, classroom_Id, teacher_Id,
+                          state, remark)
+      values ('JAVA大神课程', 1, 2, '2017-11-08',3,1,0, '*****')
+    </insert>
+    <update id="updateByPrimaryKey">
+    update course
+    set name = #{name},
+      class_Id = #{grade.id},
+      classTeacher_id = #{classTeacher.id},
+      schoolTime = #{schoolTime},
+      classroom_Id = #{classroom.id},
+      teacher_Id = #{teacher.id},
+      remark = #{remark}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, name, class_Id, classTeacher_id, schoolTime, classroom_Id, teacher_Id, 
+    state, remark
+    from course
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, class_Id, classTeacher_id, schoolTime, classroom_Id, teacher_Id, 
+    state, remark
+    from course
+  </select>
+
+  <select id="queryForCount" resultType="long">
+    SELECT count(cs.id)
+    FROM course cs LEFT JOIN employee emp ON cs.classTeacher_id=emp.id
+    LEFT JOIN grade gd ON cs.class_Id=gd.id
+    LEFT JOIN classroom cr ON cs.classroom_Id=cr.id
+    LEFT JOIN employee empl ON cs.teacher_Id=empl.id
+    <include refid="base_where"/>
+  </select>
+
+  <select id="queryForList" resultMap="BaseResultMap">
+    SELECT  cs.id, cs.name, gd.id gra_id,gd.name gra_name,emp.id  emp_id,emp.username emp_username, cs.schoolTime,
+      cr.id cr_id,cr.name cr_name, empl.id empl_id,empl.username empl_username,cs.state, cs.remark
+    FROM course cs  LEFT JOIN employee emp ON cs.classTeacher_id=emp.id
+     LEFT JOIN grade gd ON cs.class_Id=gd.id
+    LEFT JOIN classroom cr ON cs.classroom_Id=cr.id
+    LEFT JOIN employee empl ON cs.teacher_Id=empl.id
+    <include refid="base_where"/>
+    GROUP BY (cs.id)
+    LIMIT #{start},#{rows}
+  </select>
+
+  <sql id="base_where">
+    <where>
+      <if test="gradeId != null">
+        gd.id =#{gradeId}
+      </if>
+      <if test="teacherId != null">
+       and  empl.id =#{teacherId}
+      </if>
+      <if test="classroomId != null">
+       and  cr.id =#{classroomId}
+      </if>
+      <if test="beginTime != null">
+        and cs.schoolTime >= #{beginTime}
+      </if>
+      <if test="endTime != null">
+        and cs.schoolTime &lt;= #{endTime}
+      </if>
+      <if test="newDate != null">
+        and cs.schoolTime = #{newDate}
+      </if>
+    </where>
+  </sql>
+
+</mapper>

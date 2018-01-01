@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.IncomeMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Income">
+        <id column="id" property="id"/>
+        <result column="incometime" property="incometime"/>
+        <result column="incomeamount" property="incomeamount"/>
+        <result column="billnumber" property="billnumber"/>
+        <result column="remark" property="remark"/>
+        <result column="subject" property="subject"/>
+        <result column="incometype" property="incometype"/>
+        <result column="state" property="state"/>
+
+        <association property="grade" javaType="com._520it.crm.domain.Grade" columnPrefix="grade_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="payee" javaType="com._520it.crm.domain.Employee" columnPrefix="payee_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="salesman" javaType="Employee" columnPrefix="salesman_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="student" javaType="Student" columnPrefix="s_">
+            <id column="id" property="id"/>
+            <result column="qq" property="qq"/>
+            <result column="tel" property="tel"/>
+            <result column="name" property="name"/>
+        </association>
+
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" >
+        delete from income where id = #{id}
+    </delete>
+
+    <insert id="insert"  useGeneratedKeys="true" keyProperty="id">
+        insert into income (incometime, incomeamount, payee_id, billnumber,
+          grade_id, salesman_id, remark, student_id, subject, incometype, state)
+        values (#{incometime}, #{incomeamount}, #{payee.id}, #{billnumber},
+          #{grade.id}, #{salesman.id}, #{remark}, #{student.id}, #{subject}, #{incometype}, #{state})
+    </insert>
+
+    <update id="updateByPrimaryKey" >
+        update income
+        set incometime = #{incometime},
+          incomeamount = #{incomeamount},
+          payee_id = #{payee.id},
+          billnumber = #{billnumber},
+          grade_id = #{grade.id},
+          salesman_id = #{salesman.id},
+          remark = #{remark},
+          student_id = #{student.id},
+          subject = #{subject},
+          incometype = #{incometype}
+        where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+        select id, incometime, incomeamount, payee_id, billnumber, grade_id,
+        salesman_id, remark, student_id, subject, incometype, state
+        from income
+        where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, incometime, incomeamount, payee_id, billnumber, grade_id,
+        salesman_id, remark, student_id, subject, incometype, state
+        from income
+    </select>
+
+    <sql id="base_column">
+        i.id,
+        i.incometime,
+        i.incomeamount,
+        i.incometype,
+        i.billnumber,
+        i.subject,
+        i.remark,
+        i.state,
+        payee.id          payee_id,
+        payee.realname    payee_realname,
+        salesman.id       salesman_id,
+        salesman.realname salesman_realname,
+        grade.id          grade_id,
+        grade.name        grade_name,
+        s.id              s_id,
+        s.qq              s_qq,
+        s.tel             s_tel,
+        s.name            s_name
+    </sql>
+
+    <sql id="base_table">
+        income i
+        LEFT JOIN employee payee ON i.payee_id = payee.id
+        LEFT JOIN employee salesman ON i.salesman_id = salesman.id
+        LEFT JOIN grade grade ON i.grade_id = grade.id
+        LEFT JOIN student s ON i.student_id = s.id
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null">
+                and (s.name like concat('%',#{keyword},'%') or
+                grade.name like concat('%',#{keyword},'%') or
+                payee.realname like concat('%',#{keyword},'%') or
+                salesman.realname like concat('%',#{keyword},'%'))
+            </if>
+            <if test="beginTime != null">
+                and incometime >= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and incometime &lt;= #{endTime}
+            </if>
+            <if test="minIncomeAmount != null and minIncomeAmount > 0">
+                and incomeamount >= #{minIncomeAmount}
+            </if>
+            <if test="maxIncomeAmount != null and maxIncomeAmount > 0">
+                and incomeamount &lt;= #{maxIncomeAmount}
+            </if>
+            <if test="payeeId != null and payeeId > 0">
+                and payee.id = #{payeeId}
+            </if>
+            <if test="incomeTypeId != null">
+                and i.incometype = #{incomeTypeId}
+            </if>
+            <if test="subjectId != null">
+                and i.subject = #{subjectId}
+            </if>
+            <if test="gradeId != null and gradeId > 0">
+                and grade.id = #{gradeId}
+            </if>
+            <if test="salesmanId != null and salesmanId > 0">
+                and salesman.id = #{salesmanId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryCount" resultType="long">
+        select count(i.id)
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+    <select id="selectByStudentId" resultType="com._520it.crm.domain.Income">
+        select i.id, i.incometime, i.incomeamount, i.payee_id, i.billnumber, i.grade_id,
+        i.salesman_id, i.remark, i.student_id, i.subject, i.incometype
+        from income i join student s on i.student_id = s.id
+        where i.student_id = #{studentId}
+    </select>
+
+    <update id="updataState">
+        update income set state = #{state} where id = #{id}
+    </update>
+
+</mapper>

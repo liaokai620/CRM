@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.TrainMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Train" >
+    <id column="id" property="id" />
+    <result column="content" property="content" />
+    <result column="time" property="time" />
+    <result column="address" property="address" />
+    <result column="effect" property="effect" />
+    <result column="info" property="info" />
+    <result column="school_id" property="schoolId" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from train
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.Train" useGeneratedKeys="true" keyProperty="id" >
+    insert into train (content, time, address, effect, info, school_id)
+    values (#{content}, #{time}, #{address}, #{effect}, #{info}, #{schoolId})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Train" >
+    update train
+    set content = #{content},
+      time = #{time},
+      address = #{address},
+      effect = #{effect},
+      info = #{info},
+      school_id = #{schoolId}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, content, time, address, effect, info, school_id
+    from train
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, content, time, address, effect, info, school_id
+    from train
+  </select>
+
+
+  <select id="queryForCount" resultType="int" >
+    select count(id)
+    from train
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap" >
+    select id, content, time, address, effect, info, school_id
+    from train where school_id = #{schoolId}
+  </select>
+</mapper>

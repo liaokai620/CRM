@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com._520it.crm.mapper.ExamMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Exam">
+        <id column="id" property="id" />
+        <result column="examtime" property="examTime" />
+        <result column="result" property="result" />
+        <result column="name" property="name" />
+        <result column="sn" property="sn" />
+        <result column="qq" property="qq" />
+        <result column="tel" property="tel" />
+        <association columnPrefix="re_" javaType="com._520it.crm.domain.Employee" property="resolver" resultMap="com._520it.crm.mapper.EmployeeMapper.BaseResultMap" />
+        <association columnPrefix="ss_" javaType="com._520it.crm.domain.Employee" property="salesman" resultMap="com._520it.crm.mapper.EmployeeMapper.BaseResultMap" />
+        <association columnPrefix="item_" javaType="com._520it.crm.domain.Grade" property="wantGrade" resultMap="com._520it.crm.mapper.GradeMapper.BaseResultMap" />
+    </resultMap>
+
+    <sql id="base_where">
+        <where>
+            <if test="keyword !=null">
+                and (e.name like concat("%",#{keyword},"%")
+                or e.sn  like concat("%",#{keyword},"%")
+                or e.qq like concat("%",#{keyword},"%"))
+            </if>
+        </where>
+    </sql>
+
+    <delete id="deleteByPrimaryKey">
+    delete from exam
+    where id = #{id}
+  </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into exam (examtime, result, resolver_id, name, sn, salesman_id, qq, 
+      tel, wantGrade_id)
+    values (#{examTime}, #{result}, #{resolver.id}, #{name}, #{sn}, #{salesman.id}, #{qq}, 
+      #{tel}, #{wantGrade.id})
+  </insert>
+    <update id="updateByPrimaryKey">
+    update exam
+    set examtime = #{examTime},
+      result = #{result},
+      resolver_id = #{resolver.id},
+      name = #{name},
+      sn = #{sn},
+      salesman_id = #{salesman.id},
+      qq = #{qq},
+      tel = #{tel},
+      wantGrade_id = #{wantGrade.id}
+    where id = #{id}
+  </update>
+
+    <update id="result">
+    update exam set  resolver_id=#{auditorId}, result=#{result} where id=#{id};
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, examtime, result, resolver_id, name, sn, salesman_id, qq, tel, wantGrade_id
+    from exam
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, examtime, result, resolver_id, name, sn, salesman_id, qq, tel, wantGrade_id
+    from exam
+  </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select e.id, e.examtime, e.result, e.resolver_id, e.name, e.sn, e.salesman_id,
+        e.qq, e.tel, e.wantGrade_id,
+        re.id re_id,re.username re_username, ss.id ss_id,ss.username ss_username,
+        item.id item_id,item.name item_name
+        from exam e left join employee re on e.resolver_id=re.id
+        left join employee ss on e.salesman_id= ss.id
+        left join grade item on e.wantGrade_id = item.id
+        <include refid="base_where" />
+        limit #{start},#{rows}
+    </select>
+
+    <select id="queryCount" resultType="long">
+        select count(e.id)
+        from exam e left join employee re on e.resolver_id=re.id
+        left join employee ss on e.salesman_id= ss.id
+        left join grade item on e.wantGrade_id = item.id
+        <include refid="base_where" />
+    </select>
+</mapper>

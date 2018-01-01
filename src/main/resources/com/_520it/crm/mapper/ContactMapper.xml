@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ContactMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Contact">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="tel" property="tel"/>
+        <result column="email" property="email"/>
+        <result column="main" property="main"/>
+        <result column="position" property="position"/>
+        <result column="gender" property="gender"/>
+        <result column="introduction" property="introduction"/>
+
+        <!--使用内联的方式-->
+        <association property="school" javaType="com._520it.crm.domain.School" columnPrefix="s_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from contact
+    where id = #{id}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Contact" useGeneratedKeys="true" keyProperty="id">
+    insert into contact (name, school_id, tel, email, main, position, gender, 
+      introduction)
+    values (#{name}, #{school.id}, #{tel}, #{email}, #{main}, #{position}, #{gender}, 
+      #{introduction})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Contact">
+    update contact
+    set name = #{name},
+      school_id = #{school.id},
+      tel = #{tel},
+      email = #{email},
+      main = #{main},
+      position = #{position},
+      gender = #{gender},
+      introduction = #{introduction}
+    where id = #{id}
+  </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+   select c.id, c.name, c.school_id, c.tel, c.email, c.main, c.position, c.gender, c.introduction,
+		s.id s_id , s.name s_name
+    from contact c left join school s on c.school_id = s.id
+    where c.id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select c.id, c.name, c.school_id, c.tel, c.email, c.main, c.position, c.gender, c.introduction,
+		s.id s_id , s.name s_name
+    from contact c left join school s on c.school_id = s.id
+  </select>
+
+    <!--分页高级相关-->
+    <sql id="base_sql">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and c.name like concat('%',#{keyword},'%')
+            </if>
+            <if test="name != null and name != ''">
+                and c.name like concat('%',#{name},'%')
+            </if>
+            <if test="schoolId != null">
+                and c.school_id = #{schoolId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryForList" resultMap="BaseResultMap">
+        select c.id, c.name, c.school_id, c.tel, c.email, c.main, c.position, c.gender, c.introduction,
+        s.id s_id , s.name s_name
+        from contact c left join school s on c.school_id = s.id
+        <include refid="base_sql"/>
+        limit #{start} , #{rows}
+    </select>
+    <select id="queryForCount" resultType="int">
+    select count(id)
+    from contact
+  </select>
+
+
+</mapper>

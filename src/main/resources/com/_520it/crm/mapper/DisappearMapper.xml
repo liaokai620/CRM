@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.DisappearMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Disappear">
+        <id column="id" property="id"/>
+        <result column="toclassdate" property="toclassdate"/>
+        <result column="disappearphases" property="disappearphases"/>
+        <result column="disappearcause" property="disappearcause"/>
+        <result column="disappeartime" property="disappeartime"/>
+        <result column="refund" property="refund"/>
+        <result column="state" property="state"/>
+        <association property="grade" javaType="com._520it.crm.domain.Grade" columnPrefix="grade_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="inputuser" javaType="com._520it.crm.domain.Employee" columnPrefix="iu_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="salesman" javaType="com._520it.crm.domain.Employee" columnPrefix="salesman_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="student" javaType="com._520it.crm.domain.Student" columnPrefix="student_">
+            <id column="id" property="id"/>
+            <result column="qq" property="qq"/>
+            <result column="tel" property="tel"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey">
+    delete from disappear where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.Disappear" useGeneratedKeys="true" keyProperty="id">
+        insert into disappear (toclassdate, disappeargrade_id, disappearphases, disappearcause,
+          disappeartime, salesman_id, inputuser_id, refund, state, student_id
+          )
+        values (#{toclassdate}, #{grade.id}, #{disappearphases}, #{disappearcause},
+          #{disappeartime}, #{salesman.id}, #{inputuser.id}, #{refund}, #{state}, #{student.id}
+          )
+    </insert>
+
+    <update id="updateByPrimaryKey">
+        update disappear
+        set toclassdate = #{toclassdate},
+          disappeargrade_id = #{grade.id},
+          disappearphases = #{disappearphases},
+          disappearcause = #{disappearcause},
+          disappeartime = #{disappeartime},
+          salesman_id = #{salesman.id},
+          inputuser_id = #{inputuser.id},
+          refund = #{refund},
+          state = #{state},
+          student_id = #{student.id}
+        where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select id, toclassdate, disappeargrade_id, disappearphases, disappearcause, disappeartime,
+        salesman_id, inputuser_id, refund, state, student_id
+        from disappear
+        where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, toclassdate, disappeargrade_id, disappearphases, disappearcause, disappeartime,
+        salesman_id, inputuser_id, refund, state, student_id
+        from disappear
+    </select>
+
+    <sql id="base_column">
+        d.id,
+        d.toclassdate,
+        d.disappearphases,
+        d.disappearcause,
+        d.disappeartime,
+        d.refund,
+        d.state,
+        salesman.id       salesman_id,
+        salesman.realname salesman_realname,
+        iu.id             iu_id,
+        iu.realname       iu_realname,
+        student.id        student_id,
+        student.qq        student_qq,
+        student.tel       student_tel,
+        student.name      student_name,
+        grade.id grade_id,
+        grade.name grade_name
+    </sql>
+
+    <sql id="base_table">
+        disappear d
+        LEFT JOIN employee salesman ON d.salesman_id = salesman.id
+        LEFT JOIN employee iu ON d.inputuser_id = iu.id
+        LEFT JOIN student student ON d.student_id = student.id
+        LEFT JOIN grade grade on d.disappeargrade_id = grade.id
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and student.name like concat('%',#{keyword},'%')
+            </if>
+            <if test="studentId != null and studentId > 0">
+                and student.id = #{studentId}
+            </if>
+            <if test="salesmanId != null and salesmanId > 0">
+                and salesman.id = #{salesmanId}
+            </if>
+            <if test="toclassdate != null and toclassdate > 0">
+                and d.toclassdate = #{toclassdate}
+            </if>
+            <if test="disappeartime != null">
+                and d.disappeartime = #{disappeartime}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryCount" resultType="long">
+        select count(d.id) from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        FROM
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+</mapper>

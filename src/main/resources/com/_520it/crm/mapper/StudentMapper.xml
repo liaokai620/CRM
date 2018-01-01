@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.StudentMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Student">
+        <id column="id" property="id"/>
+        <result column="fileDate" property="fileDate"/>
+        <result column="meetingTime" property="meetingTime"/>
+        <result column="inputTime" property="inputTime"/>
+        <result column="wechat" property="wechat"/>
+        <result column="age" property="age"/>
+        <result column="address" property="address"/>
+        <result column="workAge" property="workAge"/>
+        <result column="startingDate" property="startingDate"/>
+        <result column="qq" property="qq"/>
+        <result column="status" property="status"/>
+        <result column="trainagency" property="trainagency"/>
+        <result column="major" property="major"/>
+        <result column="collageClass" property="collageClass"/>
+        <result column="nextFollowTime" property="nextFollowTime"/>
+        <result column="name" property="name"/>
+        <result column="tel" property="tel"/>
+        <result column="email" property="email"/>
+        <result column="status" property="status"/>
+        <result column="sponsor" property="sponsor"/>
+        <result column="nopay" property="nopay"/>
+        <result column="problemFocus" property="problemFocus"/>
+        <result column="intro" property="intro"/>
+        <result column="IDcard" property="IDcard"/>
+        <result column="emergencyContact" property="emergencyContact"/>
+        <result column="emergencyTel" property="emergencyTel"/>
+        <result column="IDcardCopy" property="IDcardCopy"/>
+        <result column="degreeCopy" property="degreeCopy"/>
+        <result column="employment" property="employment"/>
+        <result column="workExperience" property="workExperience"/>
+        <result column="currentAddr" property="currentAddr"/>
+        <result column="familyAddr" property="familyAddr"/>
+        <result column="houseHoldAddr" property="houseHoldAddr"/>
+        <result column="otherLevel" property="otherLevel"/>
+        <association property="grade" javaType="com._520it.crm.domain.Grade" column="grade_id"
+                     select="com._520it.crm.mapper.GradeMapper.selectByPrimaryKey"/>
+        <association property="education" javaType="com._520it.crm.domain.SystemDictionaryItem" column="education_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="clientType" javaType="com._520it.crm.domain.SystemDictionaryItem" column="clientType_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="salesman" javaType="com._520it.crm.domain.Employee" column="salesman_id"
+                     select="com._520it.crm.mapper.EmployeeMapper.selectByPrimaryKey"/>
+        <association property="otherSalesMan" javaType="com._520it.crm.domain.Employee" column="otherSalesMan_id"
+                     select="com._520it.crm.mapper.EmployeeMapper.selectByPrimaryKey"/>
+        <association property="wantSchool" javaType="com._520it.crm.domain.School" column="wantSchool_id"
+                     select="com._520it.crm.mapper.SchoolMapper.selectByPrimaryKey"/>
+        <association property="comeFrom" javaType="com._520it.crm.domain.SystemDictionaryItem" column="comeFrom_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="gender" javaType="com._520it.crm.domain.SystemDictionaryItem" column="gender_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="wantLevel" javaType="com._520it.crm.domain.SystemDictionaryItem" column="wantLevel_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="wantSubject" javaType="com._520it.crm.domain.SystemDictionaryItem" column="wantSubject_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="computer" javaType="com._520it.crm.domain.SystemDictionaryItem" column="computer_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="area" javaType="com._520it.crm.domain.SystemDictionaryItem" column="area_id"
+                     select="com._520it.crm.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+        <association property="wantClass" javaType="com._520it.crm.domain.Grade" column="wantclass_id"
+                     select="com._520it.crm.mapper.GradeMapper.selectByPrimaryKey"/>
+        <association property="school" javaType="com._520it.crm.domain.School" column="school_id"
+                     select="com._520it.crm.mapper.SchoolMapper.selectByPrimaryKey"/>
+
+
+        <association property="school" columnPrefix="sc_"
+                     resultMap="com._520it.crm.mapper.SchoolMapper.BaseResultMap"/>
+        <association property="salesman" columnPrefix="e_"
+                     resultMap="com._520it.crm.mapper.EmployeeMapper.BaseResultMap"/>
+        <association property="clientType" columnPrefix="clientType_"
+                     resultMap="com._520it.crm.mapper.SystemDictionaryItemMapper.BaseResultMap"/>
+        <association property="wantLevel" columnPrefix="wantLevel_"
+                     resultMap="com._520it.crm.mapper.SystemDictionaryItemMapper.BaseResultMap"/>
+        <association property="wantSchool" columnPrefix="wantSchool_"
+                     resultMap="com._520it.crm.mapper.SchoolMapper.BaseResultMap"/>
+    </resultMap>
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null">
+                and (s.qq like concat("%",#{keyword},"%") or s.tel like concat("%",#{keyword},"%") or s.name like concat("%",#{keyword},"%"))
+            </if>
+            <if test="currentUserId">
+                and inputUser_id = #{currentUserId}
+            </if>
+            <if test="queryId==0 and queryTime !=null">
+                and nextFollowTime = #{queryTime}
+            </if>
+            <if test="queryId==1">
+                and wantLevel_id = 7
+            </if>
+            <if test="queryId==2">
+                and wantLevel_id = 8
+            </if>
+            <if test="queryId==3">
+                and wantLevel_id = 41
+            </if>
+            <if test="queryId==4">
+                and wantLevel_id = 42
+            </if>
+            and s.turn= false and s.status = 0 and (inputUser_id = #{currentUserId} or salesman_id =  #{currentUserId} )
+        </where>
+    </sql>
+    <sql id="status_where">
+        <where>
+            <if test="keyword != null">
+                and (s.qq like concat("%",#{keyword},"%") or s.tel like concat("%",#{keyword},"%") or s.name like concat("%",#{keyword},"%"))
+            </if>
+            and s.turn= false and s.status = -1
+        </where>
+    </sql>
+    <delete id="deleteByPrimaryKey">
+    delete from student
+    where id = #{id}
+    </delete>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into student (fileDate, meetingTime, inputTime, wechat, age, address,
+      education_id, workAge, wantclass_id, clientType_id, startingDate, wantSubject_id,
+      salesman_id, wantSchool_id, comeFrom_id, qq, gender_id, trainagency,
+      major, wantLevel_id, otherSalesMan_id, collageClass, inputUser_id,
+      nextFollowTime, name, tel, email, area_id, school_id, sponsor,
+      status, computer_id, nopay, problemFocus, intro, IDcard, emergencyContact,
+      emergencyTel, IDcardCopy, degreeCopy, employment, workExperience,
+      foreignLanguageLevel_id, payType_id, currentAddr, familyAddr, houseHoldAddr,
+      otherLevel, grade_id,turn)
+      values (#{fileDate}, #{meetingTime}, #{inputTime}, #{wechat}, #{age}, #{address},
+      #{education.id}, #{workAge}, #{wantClass.id}, #{clientType.id}, #{startingDate}, #{wantSubject.id},
+      #{salesman.id}, #{wantSchool.id}, #{comeFrom.id}, #{qq}, #{gender.id}, #{trainagency},
+      #{major}, #{wantLevel.id}, #{otherSalesMan.id}, #{collageClass}, #{inputUser.id},
+      #{nextFollowTime}, #{name}, #{tel}, #{email}, #{area.id}, #{school.id}, #{sponsor},
+      #{status}, #{computer.id}, #{nopay}, #{problemFocus}, #{intro}, #{IDcard}, #{emergencyContact},
+      #{emergencyTel}, #{IDcardCopy}, #{degreeCopy}, #{employment}, #{workExperience},
+      #{foreignLanguageLevel.id}, #{payType.id}, #{currentAddr}, #{familyAddr}, #{houseHoldAddr},
+      #{otherLevel}, #{grade.id},#{turn})
+    </insert>
+    <update id="setStatus">
+        update student set status = #{statusId} where id=#{id}
+    </update>
+    <update id="updateByPrimaryKey">
+    update student
+    set
+      meetingTime = #{meetingTime},
+      wechat = #{wechat},
+      age = #{age},
+      address = #{address},
+      workAge = #{workAge},
+      wantclass_id = #{wantClass.id},
+      wantSubject_id = #{wantSubject.id},
+      wantSchool_id = #{wantSchool.id},
+      qq = #{qq},
+      trainagency = #{trainagency},
+      major = #{major},
+      wantLevel_id = #{wantLevel.id},
+      otherSalesMan_id = #{otherSalesMan.id},
+      collageClass = #{collageClass},
+      nextFollowTime = #{nextFollowTime},
+      name = #{name},
+      tel = #{tel},
+      email = #{email},
+      area_id = #{area.id},
+      school_id = #{school.id},
+      sponsor = #{sponsor},
+      computer_id = #{computer.id},
+      problemFocus = #{problemFocus},
+      intro = #{intro},
+      workExperience = #{workExperience},
+      foreignLanguageLevel_id = #{foreignLanguageLevel.id},
+      currentAddr = #{currentAddr},
+      otherLevel = #{otherLevel},
+      grade_id = #{grade.id},
+      turn = #{turn}
+    where id = #{id}
+  </update>
+    <update id="turn">
+        update student set turn=#{turn},IDcard=#{IDcard},emergencyContact=#{emergencyContact},
+            emergencyTel = #{emergencyTel},IDcardCopy=#{IDcardCopy},
+            degreeCopy=#{degreeCopy},workExperience = #{workExperience}
+            where id=#{id}
+    </update>
+    <update id="putIntoPool">
+        update student set status= -1 where id=#{studentId}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+     select id,fileDate, meetingTime, inputTime, wechat, age, address,
+      education_id, workAge, wantclass_id, clientType_id, startingDate, wantSubject_id,
+      salesman_id, wantSchool_id, comeFrom_id, qq, gender_id, trainagency,
+      major, wantLevel_id, otherSalesMan_id, collageClass, inputUser_id,
+      nextFollowTime, name, tel, email, area_id, school_id, sponsor,
+      status, computer_id, nopay, problemFocus, intro, IDcard, emergencyContact,
+      emergencyTel, IDcardCopy, degreeCopy, employment, workExperience,
+      foreignLanguageLevel_id, payType_id, currentAddr, familyAddr, houseHoldAddr,
+      otherLevel, grade_id
+    from student
+    where id = #{id} and  turn = false
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id,name,salesman_id, meetingTime,nextFollowTime, qq, tel,school_id,wantLevel_id, wantSchool_id,
+    intro,clientType_id,status
+    from student where turn = false and inputUser_id = #{currentUserId} and salesman_id=#{currentUserId}
+  </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        select s.id,s.name, s.meetingTime,s.nextFollowTime, s.qq, s.tel,s.intro,
+        e.id e_id,e.username e_username,
+        wantSchool.id wantSchool_id,wantSchool.name wantSchool_name,
+        clientType.id clientType_id,clientType.name clientType_name,
+        sc.id sc_id,sc.name sc_name,
+        wantLevel.id wantLevel_id,wantLevel.name wantLevel_name
+        <include refid="base_from"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+    <sql id="base_from">
+        from student s
+        left join employee e on s.salesman_id=e.id
+        left join school sc on s.school_id=sc.id
+        left join systemdictionaryitem wantLevel on s.wantLevel_id= wantLevel.id
+        left join systemdictionaryitem wantSchool on s.wantSchool_id= wantSchool.id
+        left join systemdictionaryitem clientType on s.clientType_id= clientType.id
+    </sql>
+    <select id="queryCount" resultType="long">
+        select count(s.id)
+        <include refid="base_from"/>
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryStudentForIncome" resultMap="BaseResultMap">
+        select id,name from student where turn = true
+    </select>
+
+    <select id="queryFormalStudent" resultMap="BaseResultMap">
+        select * from student where turn = true
+    </select>
+
+    <select id="queryForCustomerPool" resultMap="BaseResultMap">
+        select s.id,s.name, s.meetingTime,s.nextFollowTime, s.qq, s.tel,s.intro,s.inputTime,s.status,
+        e.id e_id,e.username e_username,
+        wantSchool.id wantSchool_id,wantSchool.name wantSchool_name,
+        wantClass.id wantClass_id,wantClass.name wantClass_name,
+        clientType.id clientType_id,clientType.name clientType_name,
+        sc.id sc_id,sc.name sc_name,
+        wantLevel.id wantLevel_id,wantLevel.name wantLevel_name
+        <include refid="base_from"/>
+        left join systemdictionaryitem wantClass on s.wantclass_id= wantClass.id
+        <include refid="status_where"/>
+        limit #{start},#{rows}
+    </select>
+
+    <update id="turnGrade">
+        update student set grade_id = #{gradeId} where id = #{studentId}
+    </update>
+
+    <update id="updateGrade">
+        update student set grade_id = #{grade.id} where id = #{id}
+    </update>
+
+</mapper>

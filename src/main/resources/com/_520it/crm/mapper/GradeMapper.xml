@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.GradeMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Grade" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="number" property="number" />
+    <result column="beginTime" property="beginTime" />
+    <result column="state" property="state" />
+    
+    <association property="course" javaType="com._520it.crm.domain.Course" columnPrefix="cou_">
+      <id property="id" column="id"/>
+      <result property="name" column="name"/>
+      <result property="schoolTime" column="schoolTime"/>
+    </association>
+
+    <association property="classTeacher" javaType="com._520it.crm.domain.Employee" columnPrefix="emp_">
+        <id column="id" property="id"/>
+      <result column="username" property="username"/>
+    </association>
+    
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from grade
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.Grade" useGeneratedKeys="true" keyProperty="id" >
+    insert into grade (name, course_Id, number, beginTime, state,classTeacher_id
+      )
+    values (#{name}, #{course.id}, #{number}, #{beginTime}, #{state},0
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Grade" >
+    update grade
+    set name = #{name},
+      course_Id = #{course.id},
+      number = #{number},
+      beginTime = #{beginTime}
+    where id = #{id}
+  </update>
+  <!--分配班主任-->
+  <update id="allot">
+    update grade
+    set
+      classTeacher_id = #{classTeacher.id}
+    where id = #{id}
+  </update>
+  <!--给班级办理结业-->
+    <update id="gradeMapper">
+      update grade
+      set
+        state = 1
+      where id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, course_Id, number, beginTime, classTeacher_id, state
+    from grade
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, course_Id, number, beginTime, classTeacher_id, state
+    from grade
+  </select>
+
+  <select id="queryForCount" resultType="long">
+    select count(gd.id)
+    from  grade gd LEFT JOIN employee  emp ON  gd.classTeacher_id = emp.id
+    LEFT JOIN course cou ON gd.course_Id=cou.id
+    <include refid="base_where"/>
+  </select>
+
+  <select id="queryForList" resultMap="BaseResultMap">
+    select gd.id,  gd.name,cou.id cou_id,cou.name cou_name,  gd.number,  gd.beginTime, emp.id emp_id,emp.username emp_username , gd.state
+    from  grade gd  LEFT JOIN employee  emp ON  gd.classTeacher_id = emp.id
+    LEFT JOIN course cou ON gd.course_Id=cou.id
+    <include refid="base_where"/>
+    ORDER BY (gd.id)
+    limit #{start},#{rows}
+  </select>
+
+    <select id="selectByStudentId" resultType="com._520it.crm.domain.Grade">
+        select g.id, g.name
+        from grade g join student s on s.grade_id = g.id
+        where s.id = #{studentId}
+    </select>
+
+    <sql id="base_where">
+    <where>
+      <if test="keyword != null">
+        and  gd.name like concat('%',#{keyword},'%')
+      </if>
+    </where>
+  </sql>
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.QueryholidayMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Queryholiday" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="starttime" property="starttime" jdbcType="TIMESTAMP" />
+    <result column="endtime" property="endtime" jdbcType="TIMESTAMP" />
+    <result column="querytype" property="querytype" jdbcType="VARCHAR" />
+    <result column="queryresult" property="queryresult" jdbcType="VARCHAR" />
+    <result column="state" property="state" />
+    <result column="auditor" property="auditor" />
+    <association property="employee" javaType="com._520it.crm.domain.Employee">
+      <id column="e_id" property="id"></id>
+      <result column="e_name" property="realname"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" >
+    delete from queryholiday
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into queryholiday (employee_id, starttime, endtime, 
+      querytype, queryresult,state)
+    values (#{employee.id,jdbcType=BIGINT}, #{starttime,jdbcType=TIMESTAMP}, #{endtime,jdbcType=TIMESTAMP}, 
+      #{querytype,jdbcType=VARCHAR}, #{queryresult,jdbcType=VARCHAR},#{state})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update queryholiday
+    set employee_id = #{employee.id,jdbcType=BIGINT},
+      starttime = #{starttime,jdbcType=TIMESTAMP},
+      endtime = #{endtime,jdbcType=TIMESTAMP},
+      querytype = #{querytype,jdbcType=VARCHAR},
+      queryresult = #{queryresult,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <sql id="base_where">
+    <where>
+      <if test="name!=null">
+        and e.realname like concat('%',#{name},'%')
+      </if>
+      <if test="beginDate!=null">
+        and q.starttime >=#{beginDate}
+      </if>
+      <if test="endDate!=null">
+        and q.endtime &lt;=#{endDate}
+      </if>
+      <if test="state!=null and state>-1">
+        and q.state=#{state}
+      </if>
+    </where>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+   select q.id, employee_id, starttime, endtime, querytype, queryresult,q.state,auditor,
+    e.id e_id,e.realname e_name
+    from queryholiday q join employee e on q.employee_id = e.id
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select q.id, employee_id, starttime, endtime, querytype, queryresult,q.state,auditor,
+    e.id e_id,e.realname e_name
+    from queryholiday q join employee e on q.employee_id = e.id
+  </select>
+
+  <select id="count" resultType="Long">
+    SELECT  count(q.id)from queryholiday q join employee e on q.employee_id = e.id
+    <include refid="base_where"></include>
+  </select>
+
+  <select id="queryForList" resultMap="BaseResultMap" >
+    select q.id, employee_id, starttime, endtime, querytype, queryresult,q.state,auditor,
+    e.id e_id,e.realname e_name
+    from queryholiday q join employee e on q.employee_id = e.id
+    <include refid="base_where"></include>
+    limit #{start},#{rows}
+  </select>
+  <select id="selectbyPrimaryEmployee" resultMap="BaseResultMap" >
+    select q.id, employee_id, starttime, endtime, querytype, queryresult,q.state,auditor,
+    e.id e_id,e.realname e_name
+    from queryholiday q join employee e on q.employee_id = e.id
+    where e.id = #{queryHolidayId}
+  </select>
+
+  <update id="changeState">
+        update queryholiday set
+        state = #{queryHolidayState},
+        auditor=#{auditor}
+         where id = #{queryHolidayId}
+  </update>
+</mapper>

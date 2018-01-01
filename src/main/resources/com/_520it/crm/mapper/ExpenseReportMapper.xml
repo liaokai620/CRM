@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ExpenseReportMapper">
+
+    <sql id="base_where">
+        <where>
+            <if test="beginTime !=null">
+                and e.expendtime >= #{beginTime}
+            </if>
+            <if test="endTime!=null">
+                AND e.expendtime &lt; #{endTime}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="expenseList" resultType="map">
+        SELECT ${groupBy} AS groupByType
+        ,sum(expendamount) AS totalMoney
+        FROM expense e JOIN employee emp
+        ON e.teller_id = emp.id
+        <include refid="base_where"></include>
+        GROUP BY ${groupBy}
+    </select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.TurnOverHistoryMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.TurnOverHistory" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="qq" property="qq" />
+    <result column="tel" property="tel" />
+    <result column="date" property="date" />
+    <result column="reason" property="reason" />
+    <association property="beforeOwner" javaType="com._520it.crm.domain.Employee"
+      columnPrefix="b_"  resultMap="com._520it.crm.mapper.EmployeeMapper.BaseResultMap"/>
+    <association property="targetOwner" javaType="com._520it.crm.domain.Employee"
+      columnPrefix="t_"  resultMap="com._520it.crm.mapper.EmployeeMapper.BaseResultMap"/>
+  </resultMap>
+
+  <sql id="base_where">
+    <where>
+
+    </where>
+  </sql>
+
+
+  <insert id="insert" parameterType="com._520it.crm.domain.TurnOverHistory" useGeneratedKeys="true" keyProperty="id" >
+    insert into turnoverhistory (name, qq, tel, date, reason, beforeOwner_id, targetOwner_id)
+    values (#{name}, #{qq}, #{tel}, #{date}, #{reason}, #{beforeOwner.id}, #{targetOwner.id})
+  </insert>
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, qq, tel, date, reason, beforeOwner_id, targetOwner_id
+    from turnoverhistory
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, qq, tel, date, reason, beforeOwner_id, targetOwner_id
+    from turnoverhistory
+  </select>
+
+  <select id="queryCount" resultType="long">
+      select count(h.id)  from turnoverhistory h
+        left join employee b on h.beforeOwner_id=b.id
+        left join employee t on h.targetOwner_id=t.id
+      <include refid="base_where"/>
+  </select>
+
+  <select id="queryList" resultMap="BaseResultMap">
+    select h.id, h.name, h.qq, h.tel, h.date, h.reason,
+    b.id b_id,b.username b_username,
+    t.id t_id,t.username t_username
+    from turnoverhistory h
+    left join employee b on h.beforeOwner_id=b.id
+    left join employee t on h.targetOwner_id=t.id
+    <include refid="base_where"/>
+    limit #{start},#{rows}
+  </select>
+</mapper>

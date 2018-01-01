@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.EmployeeMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Employee" >
+    <id column="id" property="id"  />
+    <result column="username" property="username"  />
+    <result column="realName" property="realname"  />
+    <result column="password" property="password"  />
+    <result column="tel" property="tel"  />
+    <result column="email" property="email"  />
+    <result column="inputTime" property="inputtime"  />
+    <result column="state" property="state"  />
+    <result column="admin" property="admin"  />
+    <association property="dept" javaType="com._520it.crm.domain.Department">
+    	<id column="dept_id" property="id"/>
+    	<result column="dept_name" property="name"/>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" >
+    delete from employee where id = #{id}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into employee (username, realName, password,
+      tel, email, dept_id,
+      inputTime, state, admin)
+    values (#{username}, #{realname}, #{password},
+      #{tel}, #{email}, #{dept.id},
+      #{inputtime}, #{state}, #{admin})
+  </insert>
+  <update id="updateByPrimaryKey"  >
+    update employee
+    <set>
+      username = #{username},
+      realName = #{realname},
+      tel = #{tel},
+      email = #{email},
+      dept_id = #{dept.id},
+      <if test="password!=null">
+      	password = #{password},
+      </if>
+      <if test="inputtime!=null">
+      	inputTime = #{inputtime},
+      </if>
+      <if test="state!=null">
+       	state = #{state},
+      </if>
+      <if test="admin!=null">
+      	admin = #{admin}
+      </if>
+     </set>
+    where id = #{id}
+  </update>
+
+
+    <update id="changePassword">
+        update employee set password=#{password} where id=#{employeeId}
+    </update>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+    select id, username, realName, password, tel, email, dept_id, inputTime, state, admin
+    from employee
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, username, realName, password, tel, email, dept_id, inputTime, state, admin
+    from employee
+  </select>
+  
+  <select id="login" resultMap="BaseResultMap">
+	select  id, username, realName, password, tel, email, inputTime, state, admin from employee where username = #{username} and password = #{password}
+  </select>
+  
+  <sql id="condition_sql">
+  	<where>
+  		<if test="keyword!=null">
+  			and (emp.username like concat('%',#{keyword},'%') or emp.realname like concat('%',#{keyword},'%'))
+  		</if>
+        <if test="currentUserId!=null">
+            and emp.id = #{currentUserId}
+        </if>
+  	</where>
+  </sql>
+  
+  <select id="queryPageCount" resultType="long">
+  	select count(*) from employee emp
+  	<include refid="condition_sql"/>
+  </select>
+  <select id="queryPageData" resultMap="BaseResultMap">
+  	select 
+		 emp.id, emp.username, emp.realName, emp.password, emp.tel, emp.email, emp.inputTime, emp.state, emp.admin,
+		 dept.id as dept_id,dept.`name` as dept_name
+	from employee emp LEFT JOIN department dept on (dept.id=emp.dept_id)
+	<include refid="condition_sql"/>
+	limit #{start},#{rows}
+  </select>
+  
+  <update id="changeState">
+  	update employee set state = #{employeeState} where id = #{employeeId}
+  </update>
+  
+  <insert id="insertRelation">
+  	insert into employee_role(employee_id,role_id) values(#{employeeId},#{roleId})
+  </insert>
+  
+  <select id="queryPermissionByEmployeeId" resultType="com._520it.crm.domain.Permission">
+  	select * from permission where id in (
+		select permission_id from role_permission where role_id IN
+	  (
+			select role_id from employee_role where employee_id =#{employeeId}
+		)
+	)
+  </select>
+  <delete id="deleteRelation">
+  	delete from employee_role where employee_id=#{employeeId}
+  </delete>
+
+    <select id="queryForUsername" resultMap="BaseResultMap">
+        select * from employee where username =#{username}
+    </select>
+    <!--查询所有角色为老师的员工-->
+    <select id="queryListTeacher" resultMap="BaseResultMap">
+        SELECT emp.id ,emp.username
+        FROM employee emp JOIN employee_role er ON emp.id=er.employee_id
+        JOIN role ON er.role_id=role.id
+        WHERE role.sn='TEACHER'
+    </select>
+
+    <select id="listAllSalesMan" resultMap="BaseResultMap">
+        SELECT emp.id ,emp.username
+        FROM employee emp JOIN employee_role er ON emp.id=er.employee_id
+        JOIN role ON er.role_id=role.id
+        WHERE role.sn='SALESMAN'
+    </select>
+
+    <!--查询所有角色为营销人员的员工-->
+    <select id="listAllAdvisor" resultMap="BaseResultMap">
+        SELECT emp.id ,emp.username
+        FROM employee emp JOIN employee_role er ON emp.id=er.employee_id
+        JOIN role ON er.role_id=role.id
+        WHERE role.sn='ADVISOR'
+    </select>
+
+    <select id="selectAllConsulting" resultMap="BaseResultMap">
+        SELECT emp.id ,emp.username
+        FROM employee emp JOIN employee_role er ON emp.id=er.employee_id
+        JOIN role ON er.role_id=role.id
+        WHERE role.sn in ('MARKETOR','ADVISOR' )
+    </select>
+
+    <select id="querySalesmanList" resultType="Employee">
+        select e.id,e.realname,e.username from employee e
+        join employee_role er on e.id = er.employee_id
+        join role r on er.role_id = r.id
+        where r.sn = 'SALESMAN'
+    </select>
+
+    <select id="queryFinanceList" resultType="Employee">
+        select e.id,e.realname from employee e
+        join employee_role er on e.id = er.employee_id
+        join role r on er.role_id = r.id
+        where r.sn = 'FINANCE'
+    </select>
+
+    <select id="selectByStudentId" resultType="com._520it.crm.domain.Employee">
+        select e.id, e.username, e.realName, e.password, e.tel, e.email, e.dept_id, e.inputTime, e.state, e.admin
+        from employee e join student s on s.salesman_id = e.id
+        where s.id = #{studentId}
+    </select>
+    <select id="selectByRealname" resultType="com._520it.crm.domain.Employee">
+        select id, username, realName, password, tel, email, dept_id, inputTime, state, admin
+        from employee
+        where realname = #{realname}
+    </select>
+
+    <select id="checkout" resultType="com._520it.crm.domain.Employee">
+        select id,username,password from employee where username = #{username} and password = #{password}
+    </select>
+
+</mapper>

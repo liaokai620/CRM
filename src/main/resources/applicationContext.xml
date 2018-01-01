@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+	<!-- 1.添加外部数据库配置文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" system-properties-mode="NEVER"/>
+	<!-- 2.配置数据库连接池 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	<!-- 3.配置SqlSessionFactory -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 3.1管理数据库连接池 -->
+		<property name="dataSource" ref="dataSource"/>
+		<!-- 3.2加载mybatis中的配置文件 -->
+		<property name="configLocation" value="classpath:mybatis.cfg.xml"/>
+		<!-- 3.3添加别名注解配置 -->
+		<property name="typeAliasesPackage" value="com._520it.crm.domain"/>
+		<!-- 3.4管理映射文件 -->
+		<property name="mapperLocations" value="classpath:com/_520it/crm/mapper/*Mapper.xml"/>
+	</bean>
+	<!-- 4.事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	<!-- 5.AOP相关的配置 -->
+	<tx:advice id="crudAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="get*" propagation="SUPPORTS" />
+			<tx:method name="list*" propagation="SUPPORTS" />
+			<tx:method name="select*" propagation="SUPPORTS" />
+			<tx:method name="query*" propagation="SUPPORTS" />
+			<tx:method name="*"  propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut expression="execution(* com._520it.crm.service.*.*(..))" id="crudPointCut"/>
+		<aop:advisor advice-ref="crudAdvice" pointcut-ref="crudPointCut"/>
+	</aop:config>
+
+	<aop:config>
+		<aop:pointcut id="logPointcut" expression="execution(* com._520it.crm.service.IEmployeeService.queryPage(..))"></aop:pointcut>
+		<aop:aspect ref="logAspect">
+			<aop:after method="writeLog" pointcut-ref="logPointcut"></aop:after>
+		</aop:aspect>
+	</aop:config>
+	<!-- ************************ -->
+	<!-- 扫描mapper接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com._520it.crm.mapper"/>
+	</bean>
+</beans>

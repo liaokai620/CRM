@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.SchoolMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.School">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="shortname" property="shortname"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="createtime" property="createtime"/>
+        <result column="address" property="address"/>
+        <result column="tel" property="tel"/>
+        <result column="studentnumber" property="studentnumber"/>
+        <result column="teachernumber" property="teachernumber"/>
+        <result column="employeenumber" property="employeenumber"/>
+        <result column="introduction" property="introduction"/>
+        <result column="academicid" property="academicid"/>
+
+        <association property="maket" javaType="com._520it.crm.domain.Employee" columnPrefix="e_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="star" javaType="com._520it.crm.domain.SystemDictionaryItem" columnPrefix="itm_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="nature" javaType="com._520it.crm.domain.SystemDictionaryItem" columnPrefix="ina_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+
+
+
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+    delete from school
+    where id = #{id}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.School" useGeneratedKeys="true" keyProperty="id">
+    insert into school (name, shortname, dept_id, maket_id, createtime, address, 
+      tel, studentnumber, teachernumber, employeenumber, introduction, 
+      start_id, nature_id, academicid)
+    values (#{name}, #{shortname}, #{deptId}, #{maket.id}, #{createtime}, #{address}, 
+      #{tel}, #{studentnumber}, #{teachernumber}, #{employeenumber}, #{introduction}, 
+      #{star.id}, #{nature.id}, #{academicid})
+  </insert>
+    <update id="updateByPrimaryKey">
+    update school
+    set name = #{name},
+      shortname = #{shortname},
+      dept_id = #{deptId},
+      maket_id = #{maket.id},
+      createtime = #{createtime},
+      address = #{address},
+      tel = #{tel},
+      studentnumber = #{studentnumber},
+      teachernumber = #{teachernumber},
+      employeenumber = #{employeenumber},
+      introduction = #{introduction},
+      start_id = #{star.id},
+      nature_id = #{nature.id},
+      academicid = #{academicid}
+    where id = #{id}
+  </update>
+
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select s.id, s.name, s.shortname, s.dept_id, s.maket_id, s.createtime, s.address, s.tel, s.studentnumber,
+        s.teachernumber, s.employeenumber, s.introduction, s.start_id, s.nature_id, s.academicid
+        ,e.id e_id, e.realname e_realname,
+        itm.id itm_id , itm.name itm_name,
+				ina.id ina_id , ina.name ina_name
+        from school s left join employee e on s.maket_id = e.id
+        left join systemdictionaryitem itm on s.start_id = itm.id
+			 left join systemdictionaryitem ina on s.nature_id = ina.id
+    where s.id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select s.id, s.name, s.shortname, s.dept_id, s.maket_id, s.createtime, s.address, s.tel, s.studentnumber,
+        s.teachernumber, s.employeenumber, s.introduction, s.start_id, s.nature_id, s.academicid
+        ,e.id e_id, e.realname e_realname,
+        itm.id itm_id , itm.name itm_name,
+				ina.id ina_id , ina.name ina_name
+        from school s left join employee e on s.maket_id = e.id
+        left join systemdictionaryitem itm on s.start_id = itm.id
+			 left join systemdictionaryitem ina on s.nature_id = ina.id
+  </select>
+
+    <!--分页高级查询-->
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and s.name like concat('%',#{keyword},'%')
+            </if>
+            <if test="name != null and name != ''">
+                and s.name like concat('%',#{name},'%')
+            </if>
+            <if test="marketingId != null">
+                and s.maket_id = #{marketingId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryForCount" resultType="int">
+    select count(id)
+    from school
+  </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        select s.id, s.name, s.shortname, s.dept_id, s.maket_id, s.createtime, s.address, s.tel, s.studentnumber,
+        s.teachernumber, s.employeenumber, s.introduction, s.start_id, s.nature_id, s.academicid
+        ,e.id e_id, e.realname e_realname,
+        itm.id itm_id , itm.name itm_name,
+        ina.id ina_id , ina.name ina_name
+        from school s left join employee e on s.maket_id = e.id
+        left join systemdictionaryitem itm on s.start_id = itm.id
+        left join systemdictionaryitem ina on s.nature_id = ina.id
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+</mapper>

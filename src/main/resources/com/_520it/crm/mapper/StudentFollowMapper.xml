@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com._520it.crm.mapper.StudentFollowMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.StudentFollow">
+        <id column="id" property="id"/>
+        <result column="time" property="time"/>
+        <result column="nextMeetingTime" property="nextMeetingTime"/>
+        <result column="order" property="order"/>
+        <result column="qq" property="qq"/>
+        <result column="tel" property="tel"/>
+        <result column="consultantWay" property="consultantWay"/>
+        <result column="digest" property="digest"/>
+        <result column="auditInfo" property="auditInfo"/>
+        <result column="audit" property="audit"/>
+        <result column="meetingTime" property="meetingTime"/>
+        <result column="content" property="content"/>
+        <result column="consultLength" property="consultLength"/>
+        <association columnPrefix="stu_" javaType="com._520it.crm.domain.Student" property="student">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+
+        <association columnPrefix="s_" javaType="com._520it.crm.domain.Employee" property="consultant">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+
+        <association columnPrefix="item_" javaType="com._520it.crm.domain.SystemDictionaryItem" property="wantLevel">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null">
+                and (stu.name like concat("%",#{keyword},"%")
+                or sf.qq like concat("%",#{keyword},"%")
+                or sf.tel like concat("%",#{keyword},"%"))
+            </if>
+            <if test="currentStaffId!=null">
+                and sf.consultant_id = #{currentStaffId}
+            </if>
+            and audit = false
+        </where>
+    </sql>
+
+
+    <delete id="deleteByPrimaryKey">
+    delete from studentfollow
+    where id = #{id}
+  </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into studentfollow (time, student_id, consultant_id, nextMeetingTime, `order`, wantLevel_id, 
+      qq, tel, consultantWay, digest, auditor_id, level_id, auditInfo, 
+      audit, meetingTime, content, school_id, contact_id, consultLength, 
+      wantClass_id)
+    values (#{time}, #{student.id}, #{consultant.id}, #{nextMeetingTime}, #{order}, #{wantLevel.id},
+      #{qq}, #{tel}, #{consultantWay}, #{digest}, #{auditor.id}, #{level.id}, #{auditInfo},
+      #{audit}, #{meetingTime}, #{content}, #{school.id}, #{contact.id}, #{consultLength}, 
+      #{wantClass.id})
+  </insert>
+    <update id="updateByPrimaryKey">
+    update studentfollow
+    set time = #{time},
+      student_id = #{student.id},
+      nextMeetingTime = #{nextMeetingTime},
+      `order` = #{order},
+      wantLevel_id = #{wantLevel.id},
+      qq = #{qq},
+      tel = #{tel},
+      consultantWay = #{consultantWay},
+      digest = #{digest},
+      level_id = #{level.id},
+      auditInfo = #{auditInfo},
+      meetingTime = #{meetingTime},
+      content = #{content},
+      school_id = #{school.id},
+      contact_id = #{contact.id},
+      consultLength = #{consultLength},
+      wantClass_id = #{wantClass.id}
+    where id = #{id}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, time, student_id, consultant_id, nextMeetingTime, `order`, wantLevel_id, 
+    qq, tel, consultantWay, digest, auditor_id, level_id, auditInfo, audit, meetingTime, 
+    content, school_id, contact_id, consultLength, wantClass_id
+    from studentfollow
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, time, student_id, consultant_id, nextMeetingTime, `order`, wantLevel_id, 
+    qq, tel, consultantWay, digest, auditor_id, level_id, auditInfo, audit, meetingTime, 
+    content, school_id, contact_id, consultLength, wantClass_id
+    from studentfollow
+  </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select sf.id,sf.time,sf.nextMeetingTime,sf.order,sf.qq,sf.tel,sf.digest,sf.consultantWay,
+        s.id s_id,s.username s_username,stu.id stu_id,stu.name stu_name,item.id item_id,item.name item_name
+        from studentfollow sf
+        left join employee s on sf.consultant_id = s.id
+        left join student stu on sf.student_id=stu.id
+        left join systemdictionaryitem item on sf.wantLevel_id=item.id
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+    <update id="audit">
+        update studentfollow
+        set audit = #{audit},
+        auditor_id = #{auditor.id},
+        auditInfo = #{auditInfo},
+        level_id = #{level.id}
+        where id = #{id} and audit=false
+    </update>
+
+    <select id="queryCount" resultType="long">
+        select count(sf.id)
+        from studentfollow sf
+        left join employee s on sf.consultant_id = s.id
+        left join student stu on sf.student_id=stu.id
+        left join systemdictionaryitem item on sf.wantLevel_id=item.id
+        <include refid="base_where"/>
+    </select>
+
+</mapper>

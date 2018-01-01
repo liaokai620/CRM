@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.DayjobMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Dayjob">
+        <id column="id" property="id"/>
+        <result column="inputTime" property="inputTime"/>
+        <result column="jobDescription" property="jobDescription"/>
+        <result column="dealDescription" property="dealDescription"/>
+        <result column="state" property="state"/>
+        <association property="handler" javaType="com._520it.crm.domain.Employee" columnPrefix="e_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from dayjob
+    where id = #{id}
+  </delete>
+    <insert id="insert" parameterType="com._520it.crm.domain.Dayjob" useGeneratedKeys="true" keyProperty="id">
+    insert into dayjob (inputTime, handler_id, jobDescription, dealDescription, state
+      )
+    values (#{inputTime}, #{handler.id}, #{jobDescription}, #{dealDescription}, #{state}
+      )
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.Dayjob">
+    update dayjob
+    set
+      handler_id = #{handler.id},
+      jobDescription = #{jobDescription},
+      dealDescription = #{dealDescription}
+
+    where id = #{id}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, inputTime, handler_id, jobDescription, dealDescription, state
+    from dayjob
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, inputTime, handler_id, jobDescription, dealDescription, state
+    from dayjob
+  </select>
+    <select id="total" resultType="long">
+        select count(dj.id) from dayjob dj
+        <include refid="baseWhere"/>
+
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        select dj.id,dj.inputTime, dj.jobDescription, dj.dealDescription, dj.state,
+        e.id e_id,e.username e_username, e.dept_id
+        from dayjob dj left join employee e
+        on dj.handler_id = e.id
+        <include refid="baseWhere"/>
+         limit #{start} ,#{rows}
+    </select>
+    <sql id="baseWhere">
+        <where>
+            <if test="currentId != null">
+             and   dj.handler.id= #{currentId}
+            </if>
+            <if test="deptId != null">
+                and e.dept_Id =#{deptId}
+            </if>
+
+          <if test="queryTime!= null and queryTime !='' ">
+           and   dj.inputTime =#{queryTime}
+          </if>
+
+          <if test=" querHandlerId !=null  ">
+               and  dj.handler_id= #{querHandlerId}
+          </if>
+        </where>
+    </sql>
+    <update id="markSuccess">
+        update dayjob
+        set state=1
+        where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </update>
+    <update id="markFailed">
+        update dayjob
+        set state=-1
+        where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </update>
+   <!-- <update id="markFailed">
+        update dayjob
+        set state=-1
+        where id in
+        <foreach collection="ids"open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </update>-->
+    <update id="editDescription">
+        update dayjob
+        set dealDescription = #{dealDescription}
+        where id = #{id}
+    </update>
+
+</mapper>

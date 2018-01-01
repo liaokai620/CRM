@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.YunFileMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.YunFile" >
+    <id column="id" property="id" />
+    <result column="name" property="name" />
+    <result column="uploader_id" property="uploader.id" />
+    <result column="inputTime" property="inputTime" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from yunfile
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="com._520it.crm.domain.YunFile" useGeneratedKeys="true" keyProperty="id" >
+    insert into yunfile (name, uploader_id, inputTime)
+    values (#{name}, #{uploader.id}, #{inputTime})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com._520it.crm.domain.YunFile" >
+    update yunfile
+    set name = #{name},
+      uploader_id = #{uploader.id},
+      inputTime = #{inputTime}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, uploader_id, inputTime
+    from yunfile
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, uploader_id, inputTime
+    from yunfile
+  </select>
+</mapper>

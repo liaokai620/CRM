@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.SystemDictionaryItemMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.SystemDictionaryItem">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="intro" property="intro"/>
+        <association property="parent" javaType="com._520it.crm.domain.SystemDictionary" columnPrefix="sd_">
+            <id column="id" property="id"></id>
+            <result column="name" property="name"></result>
+        </association>
+    </resultMap>
+    
+    <delete id="deleteByPrimaryKey">
+        delete from systemdictionaryitem where id = #{id}
+    </delete>
+    
+    <delete id="deleteItemByParentId">
+        delete from systemdictionaryitem where parent_id = #{parentId}
+    </delete>
+
+
+    <insert id="saveItem" useGeneratedKeys="true" keyProperty="id">
+        insert into systemdictionaryitem ( parent_id, name, intro)
+        values(#{parent.id}, #{name}, #{intro})
+    </insert>
+
+    <update id="editItem">
+        update systemdictionaryitem
+        set
+          name = #{name},
+          intro = #{intro}
+        where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select id, parent_id, name, intro
+        from systemdictionaryitem
+        where id = #{id}
+    </select>
+
+    <select id="listItemByParentId" resultMap="BaseResultMap">
+        select item.id, item.parent_id, item.name, item.intro,sd.id AS sd_id,sd.name AS sd_name
+        from systemdictionaryitem item JOIN systemdictionary sd
+        ON item.parent_id = sd.id
+        where item.parent_id = #{parent.id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select item.id, item.parent_id, item.name, item.intro,sd.id AS sd_id,sd.name AS sd_name
+        from systemdictionaryitem item JOIN systemdictionary sd
+        ON item.parent_id = sd.id
+    </select>
+
+    <!--学校模块查询星级-->
+    <select id="queryStarForSchool" resultType="com._520it.crm.domain.SystemDictionaryItem">
+        select id,parent_id ,name ,intro
+        from systemdictionaryitem where parent_id = #{starId}
+    </select>
+    
+    <!--学校模块查询办学性质-->
+    <select id="queryNatureForSchool" resultType="com._520it.crm.domain.SystemDictionaryItem">
+        select id,parent_id ,name ,intro
+        from systemdictionaryitem where parent_id = #{natueId}
+    </select>
+    
+    <!--查询折扣方式-->
+    <select id="queryDiscoutForPayment" resultType="com._520it.crm.domain.SystemDictionaryItem">
+        SELECT sys.id, sys.name, sys.intro
+        from systemdictionaryitem sys join systemdictionary s on sys.parent_id = s.id
+        where sys.id = #{cheapWayId}
+    </select>
+    
+</mapper>

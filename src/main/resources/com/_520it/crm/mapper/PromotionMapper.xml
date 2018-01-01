@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.PromotionMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Promotion">
+        <id column="id" property="id"/>
+        <result column="account" property="account"/>
+        <result column="tip" property="tip"/>
+        <result column="promotiontime" property="promotiontime"/>
+        <result column="state" property="state"/>
+        <association property="student" javaType="com._520it.crm.domain.Student" columnPrefix="s_">
+            <id column="id" property="id"/>
+            <result column="qq" property="qq"/>
+            <result column="tel" property="tel"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="payment" javaType="com._520it.crm.domain.Payment" columnPrefix="i_">
+            <id column="id" property="id"/>
+            <result column="totalAmount" property="totalAmount"/>
+        </association>
+        <association property="beforegrade" javaType="com._520it.crm.domain.Grade" columnPrefix="be_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="aftergrade" javaType="com._520it.crm.domain.Grade" columnPrefix="af_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="salesman" javaType="com._520it.crm.domain.Employee" columnPrefix="salesman_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from promotion where id = #{id}
+    </delete>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into promotion (student_id, payment_id, account, tip, promotiontime, beforegrade_id,
+          aftergrade_id, salesman_id, state)
+        values (#{student.id}, #{payment.id}, #{account}, #{tip}, #{promotiontime}, #{beforegrade.id},
+          #{aftergrade.id}, #{salesman.id}, #{state})
+    </insert>
+
+    <update id="updateByPrimaryKey">
+        update promotion
+        set student_id = #{student.id},
+          payment_id = #{payment.id},
+          account = #{account},
+          tip = #{tip},
+          promotiontime = #{promotiontime},
+          beforegrade_id = #{beforegrade.id},
+          aftergrade_id = #{aftergrade.id},
+          salesman_id = #{salesman.id},
+          state = #{state}
+        where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select id, student_id, payment_id, account, tip, promotiontime, beforegrade_id, aftergrade_id,
+        salesman_id, state
+        from promotion
+        where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, student_id, payment_id, account, tip, promotiontime, beforegrade_id, aftergrade_id,
+        salesman_id, state
+        from promotion
+    </select>
+
+    <sql id="base_column">
+        p.id,
+        p.account,
+        p.tip,
+        p.promotiontime,
+        p.state,
+        s.id           s_id,
+        s.qq           s_qq,
+        s.tel          s_tel,
+        s.name         s_name,
+        i.id           i_id,
+        i.totalAmount  i_totalAmount,
+        be.id          be_id,
+        be.name        be_name,
+        af.id          af_id,
+        af.name        af_name,
+        salesman.id           salesman_id,
+        salesman.realname     salesman_realname
+    </sql>
+
+    <sql id="base_table">
+        promotion p
+        LEFT JOIN student s ON p.student_id = s.id
+        LEFT JOIN payment i ON p.payment_id = i.id
+        LEFT JOIN grade be ON p.beforegrade_id = be.id
+        LEFT JOIN grade af ON p.aftergrade_id = af.id
+        LEFT JOIN employee salesman ON p.salesman_id = salesman.id
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <if test="keyword != null">
+                and (s.name like concat('%',#{keyword},'%') or
+                s.qq like concat('%',#{keyword},'%') or
+                s.tel like concat('%',#{keyword},'%'))
+            </if>
+            <if test="beforegradeId != null and beforegradeId > 0">
+                and be.id = #{beforegradeId}
+            </if>
+            <if test="salesmanId != null and salesmanId > 0">
+                and e.id = #{salesmanId}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryCount" resultType="long">
+        select count(p.id) from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.SalaryMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Salary" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="basesalary" property="basesalary" jdbcType="DECIMAL" />
+    <result column="alldaysalary" property="alldaysalary" jdbcType="DECIMAL" />
+    <result column="subsidy" property="subsidy" jdbcType="DECIMAL" />
+    <result column="fivesalary" property="fivesalary" jdbcType="DECIMAL" />
+    <result column="fine" property="fine" jdbcType="DECIMAL" />
+    <result column="commission" property="commission" jdbcType="DECIMAL" />
+    <result column="totalsalary" property="totalsalary" jdbcType="DECIMAL" />
+    <result column="aftersalary" property="aftersalary" jdbcType="DECIMAL" />
+    <result column="yearendsalary" property="yearendsalary" jdbcType="DECIMAL" />
+    <result column="salarytime" property="salarytime" jdbcType="TIMESTAMP" />
+    <result column="state" property="state" />
+    <association property="employee" javaType="com._520it.crm.domain.Employee">
+      <id column="e_id" property="id"></id>
+      <result column="e_name" property="realname"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" >
+    delete from salary
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into salary (employee_id, basesalary, alldaysalary, 
+      subsidy, fivesalary, fine, 
+      commission, totalsalary, aftersalary, 
+      yearendsalary, salarytime,state)
+    values (#{employee.id,jdbcType=BIGINT}, #{basesalary,jdbcType=DECIMAL}, #{alldaysalary,jdbcType=DECIMAL}, 
+      #{subsidy,jdbcType=DECIMAL}, #{fivesalary,jdbcType=DECIMAL}, #{fine,jdbcType=DECIMAL}, 
+      #{commission,jdbcType=DECIMAL}, #{totalsalary,jdbcType=DECIMAL}, #{aftersalary,jdbcType=DECIMAL}, 
+      #{yearendsalary,jdbcType=DECIMAL}, #{salarytime,jdbcType=TIMESTAMP},#{state})
+  </insert>
+  <update id="updateByPrimaryKey" >
+    update salary
+    set employee_id = #{employee.id,jdbcType=BIGINT},
+      basesalary = #{basesalary,jdbcType=DECIMAL},
+      alldaysalary = #{alldaysalary,jdbcType=DECIMAL},
+      subsidy = #{subsidy,jdbcType=DECIMAL},
+      fivesalary = #{fivesalary,jdbcType=DECIMAL},
+      fine = #{fine,jdbcType=DECIMAL},
+      commission = #{commission,jdbcType=DECIMAL},
+      totalsalary = #{totalsalary,jdbcType=DECIMAL},
+      aftersalary = #{aftersalary,jdbcType=DECIMAL},
+      yearendsalary = #{yearendsalary,jdbcType=DECIMAL},
+      salarytime = #{salarytime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <sql id="base_where">
+    <where>
+      <if test="name!=null">
+        and e.realname like concat('%',#{name},'%')
+      </if>
+      <if test="beginDate!=null">
+        and salarytime >=#{beginDate}
+      </if>
+      <if test="endDate!=null">
+        and salarytime &lt;=#{endDate}
+      </if>
+      <if test="month!=null and monthPlus!=null">
+        and salarytime BETWEEN #{month} and #{monthPlus}
+      </if>
+      <if test="state!=null and state>-1">
+        and s.state=#{state}
+      </if>
+    </where>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select s.id, employee_id, basesalary, alldaysalary, subsidy, fivesalary, fine, commission,
+    totalsalary, aftersalary, yearendsalary, salarytime,s.state,
+    e.id e_id,e.realname e_name
+    from salary s join employee e on s.employee_id = e.id
+    where s.id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select s.id, basesalary, alldaysalary, subsidy, fivesalary, fine, commission,
+    totalsalary, aftersalary, yearendsalary, salarytime,s.state,
+    e.id e_id ,e.realname e_name
+    from salary s join employee e on s.employee_id = e.id
+  </select>
+
+
+  <select id="count" resultType="Long">
+    SELECT count(s.id)  from salary s join employee e on s.employee_id = e.id
+    <include refid="base_where"></include>
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+      select s.id, basesalary, alldaysalary, subsidy, fivesalary, fine, commission,
+    totalsalary, aftersalary, yearendsalary, salarytime,s.state,
+    e.id e_id ,e.realname e_name
+    from salary s join employee e on s.employee_id = e.id
+    <include refid="base_where"></include>
+    limit #{start},#{rows}
+  </select>
+  <select id="selectByPrimarytime" resultMap="BaseResultMap">
+      select s.id, basesalary, alldaysalary, subsidy, fivesalary, fine, commission,
+    totalsalary, aftersalary, yearendsalary, salarytime,s.state,
+    e.id e_id ,e.realname e_name
+    from salary s join employee e on s.employee_id = e.id
+    where salarytime BETWEEN #{startTime} and #{endTime} and s.employee_id=#{empId}
+  </select>
+
+  <update id="changeState">
+    update salary set state = #{salaryState} where id = #{salaryId}
+  </update>
+</mapper>

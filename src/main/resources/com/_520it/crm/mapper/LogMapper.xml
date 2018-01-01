@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.LogMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Log" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey"  >
+    delete from log
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into log (opuser_id, optime, opip,
+      function, params)
+    values (#{opUser.id}, #{opTime,jdbcType=TIMESTAMP}, #{opIp,jdbcType=VARCHAR},
+      #{function,jdbcType=VARCHAR}, #{params,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey"  >
+    update log
+    set opuser_id = #{opuser,jdbcType=BIGINT},
+      optime = #{optime,jdbcType=TIMESTAMP},
+      opip = #{opip,jdbcType=VARCHAR},
+      function = #{function,jdbcType=VARCHAR},
+      params = #{params,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+    select id, opuser_id, optime, opip, function, params
+    from log
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, opuser_id, optime, opip, function, params
+    from log
+  </select>
+</mapper>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.ExpenseMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Expense">
+        <id column="id" property="id"/>
+        <result column="expendtime" property="expendtime"/>
+        <result column="expendamount" property="expendamount"/>
+        <result column="expendtype" property="expendtype"/>
+        <result column="expendmode" property="expendmode"/>
+        <result column="classify" property="classify"/>
+        <result column="subject" property="subject"/>
+        <result column="billnumber" property="billnumber"/>
+        <result column="audit" property="audit"/>
+        <result column="note" property="note"/>
+        <association property="teller" javaType="com._520it.crm.domain.Employee" columnPrefix="teller_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="person" javaType="com._520it.crm.domain.Student" columnPrefix="person_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey">
+        delete from expense where id = #{id}
+    </delete>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into expense (expendtime, expendamount, teller_id, person_id, expendtype,
+          expendmode, classify, subject, billnumber, audit, note)
+        values (#{expendtime}, #{expendamount}, #{teller.id}, #{person.id}, #{expendtype},
+          #{expendmode}, #{classify}, #{subject}, #{billnumber}, #{audit} ,#{note})
+    </insert>
+
+    <update id="updateByPrimaryKey">
+        update expense
+        set expendtime = #{expendtime},
+          expendamount = #{expendamount},
+          person_id = #{person.id},
+          expendtype = #{expendtype},
+          expendmode = #{expendmode},
+          classify = #{classify},
+          subject = #{subject},
+          note = #{note}
+        where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select id, expendtime, expendamount, teller_id, person_id, expendtype, expendmode,
+        classify, subject, billnumber, audit ,note
+        from expense
+        where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, expendtime, expendamount, teller_id, person_id, expendtype, expendmode,
+        classify, subject, billnumber, audit, note
+        from expense
+    </select>
+
+    <sql id="base_column">
+        e.id,
+        e.expendtime,
+        e.expendamount,
+        e.expendtype,
+        e.expendmode,
+        e.classify,
+        e.subject,
+        e.billnumber,
+        e.audit,
+        e.note,
+        teller.id       teller_id,
+        teller.realname teller_realname,
+        person.id       person_id,
+        person.name     person_name
+    </sql>
+
+    <sql id="base_table">
+        expense e
+        LEFT JOIN employee teller ON e.teller_id = teller.id
+        LEFT JOIN student person ON e.person_id = person.id
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <if test="beginTime != null">
+                and e.expendtime >= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and e.expendtime &lt;= #{endTime}
+            </if>
+            <if test="minexpendamount != null and minexpendamount > 0">
+                and e.expendamount > #{minexpendamount}
+            </if>
+            <if test="maxexpendamount != null and maxexpendamount > 0">
+                and e.expendamount &lt; #{maxexpendamount}
+            </if>
+            <if test="tellerId != null and tellerId > 0">
+                and e.teller_id = #{tellerId}
+            </if>
+            <if test="personId != null and personId > 0">
+                and e.person_id = #{personId}
+            </if>
+            <if test="expendtype != null and expendtype != ''">
+                and e.expendtype like concat('%',#{expendtype},'%')
+            </if>
+            <if test="expendmode != null and expendmode != ''">
+                and e.expendmode like concat('%',#{expendmode},'%')
+            </if>
+            <if test="classify != null and classify != ''">
+                and e.classify like concat('%',#{classify},'%')
+            </if>
+            <if test="subject != null and subject != ''">
+                and e.subject like concat('%',#{subject},'%')
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (person.name like concat('%',#{keyword},'%') or
+                teller.realname like concat('%',#{keyword},'%') or
+                e.expendamount like concat('%',#{keyword},'%') or
+                e.expendtype like concat('%',#{keyword},'%') or
+                e.expendmode like concat('%',#{keyword},'%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryCount" resultType="long">
+        select count(e.id) from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+    <update id="audit">
+        update expense set audit = 1 where id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.AttendanceMapper" >
+  <resultMap id="BaseResultMap" type="com._520it.crm.domain.Attendance" >
+    <id column="id" property="id" />
+    <result column="worktime" property="worktime"/>
+    <result column="clocktime" property="clocktime" />
+    <result column="state" property="state"/>
+    <result column="employee_id" property="employee.id"  />
+    <association property="employee" javaType="com._520it.crm.domain.Employee">
+      <id column="e_id" property="id"></id>
+      <result column="e_name" property="realname"></result>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" >
+    delete from attendance
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into attendance (employee_id, worktime, clocktime, 
+      state)
+    values (#{employee.id,jdbcType=BIGINT}, #{worktime}, #{clocktime,jdbcType=TIMESTAMP},
+      #{state,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" >
+    update attendance
+    set employee_id = #{employee.id,jdbcType=BIGINT},
+      worktime = #{worktime},
+      clocktime = #{clocktime,jdbcType=TIMESTAMP},
+      state = #{state,jdbcType=INTEGER}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <sql id="base_where">
+    <where>
+      <if test="name!=null">
+        and e.realname like concat('%',#{name},'%')
+      </if>
+      <if test="beginDate!=null">
+        and a.clocktime >=#{beginDate}
+      </if>
+      <if test="endDate!=null">
+        and a.clocktime &lt;=#{endDate}
+      </if>
+      <if test="state!=null and state>-1">
+        and a.state=#{state}
+      </if>
+    </where>
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" >
+    select id, employee_id, worktime, clocktime, state
+    from attendance
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, employee_id, worktime, clocktime, state
+    from attendance
+  </select>
+
+  <select id="count" resultType="Long">
+    SELECT  count(a.id)from attendance a join employee e on a.employee_id = e.id
+    <include refid="base_where"></include>
+  </select>
+
+  <select id="queryForList" resultMap="BaseResultMap" >
+    select a.id, a.worktime, a.clocktime, a.state,
+    e.id e_id,e.realname e_name
+    from attendance a join employee e on a.employee_id = e.id
+    <include refid="base_where"></include>
+    limit #{start},#{rows}
+  </select>
+  <select id="selectbyPrimaryEmployee" resultMap="BaseResultMap" >
+    select a.id, a.worktime, a.clocktime, a.state,
+    e.id e_id,e.realname e_name
+    from attendance a join employee e on a.employee_id = e.id
+    where e.id=#{EmpId} and clocktime BETWEEN #{startTime} and #{endTime}
+  </select>
+
+</mapper>

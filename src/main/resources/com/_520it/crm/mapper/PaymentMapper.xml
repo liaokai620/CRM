@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.PaymentMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Payment">
+        <id column="id" property="id"/>
+        <result column="planTuition" property="planTuition"/>
+        <result column="privilege" property="privilege"/>
+        <result column="prepaid" property="prepaid"/>
+        <result column="nearlyPaymentTime" property="nearlyPaymentTime"/>
+        <result column="otherCost" property="otherCost"/>
+        <result column="totalAmount" property="totalAmount"/>
+        <result column="arrearage" property="arrearage"/>
+        <result column="nestPaymentTime" property="nestPaymentTime"/>
+        <result column="cheapSum" property="cheapSum"/>
+        <result column="otherCheap" property="otherCheap"/>
+        <result column="saleWater" property="saleWater"/>
+        <result column="lastPaymentTime" property="lastPaymentTime"/>
+        <result column="reminderTimes" property="reminderTimes"/>
+        <result column="tuition" property="tuition"/>
+        <result column="state" property="state"/>
+        <result column="enrolTime" property="enrolTime"/>
+        <result column="paymentType" property="paymentType"/>
+        <association property="student" javaType="com._520it.crm.domain.Student" columnPrefix="s_">
+            <id column="id" property="id"/>
+            <result column="qq" property="qq"/>
+            <result column="tel" property="tel"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="grade" javaType="com._520it.crm.domain.Grade" columnPrefix="g_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="salesman" javaType="com._520it.crm.domain.Employee" columnPrefix="salesman_">
+            <id column="id" property="id"/>
+            <result column="realname" property="realname"/>
+        </association>
+        <association property="cheapWay" javaType="com._520it.crm.domain.SystemDictionaryItem" columnPrefix="sys_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="intro" property="intro"/>
+        </association>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey">
+        delete from payment where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com._520it.crm.domain.Payment" useGeneratedKeys="true" keyProperty="id">
+        insert into payment (planTuition, privilege, prepaid, nearlyPaymentTime, cheapWay_id, 
+          otherCost, totalAmount, arrearage, nestPaymentTime, cheapSum, otherCheap, 
+          saleWater, lastPaymentTime, reminderTimes, tuition, student_id, grade_id, state, enrolTime, paymentType)
+        values (#{planTuition}, #{privilege}, #{prepaid}, #{nearlyPaymentTime}, #{cheapWay.id}, 
+          #{otherCost}, #{totalAmount}, #{arrearage}, #{nestPaymentTime}, #{cheapSum}, #{otherCheap}, 
+          #{saleWater}, #{lastPaymentTime}, #{reminderTimes}, #{tuition}, #{student.id}, #{grade.id}, #{state}, #{enrolTime}, #{paymentType})
+    </insert>
+
+    <update id="updateByPrimaryKey">
+        update payment
+        set
+          prepaid = #{prepaid},
+          totalAmount = #{totalAmount},
+          arrearage = #{arrearage},
+          tuition = #{tuition},
+          grade_id = #{grade.id},
+          state = #{state},
+          enrolTime = #{enrolTime},
+          paymentType = #{paymentType}
+        where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select id, planTuition, privilege, prepaid, nearlyPaymentTime, cheapWay_id, otherCost, 
+        totalAmount, arrearage, nestPaymentTime, cheapSum, otherCheap, saleWater, lastPaymentTime, 
+        reminderTimes, tuition, student_id, grade_id, state, enrolTime, paymentType
+        from payment
+        where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, planTuition, privilege, prepaid, nearlyPaymentTime, cheapWay_id, otherCost, 
+        totalAmount, arrearage, nestPaymentTime, cheapSum, otherCheap, saleWater, lastPaymentTime, 
+        reminderTimes, tuition, student_id, grade_id, state, enrolTime, paymentType
+        from payment
+    </select>
+
+    <sql id="base_column">
+        p.id,
+        p.planTuition,
+        p.privilege,
+        p.prepaid,
+        p.nearlyPaymentTime,
+        p.otherCost,
+        p.totalAmount,
+        p.arrearage,
+        p.nestPaymentTime,
+        p.cheapSum,
+        p.otherCheap,
+        p.saleWater,
+        p.lastPaymentTime,
+        p.reminderTimes,
+        p.tuition,
+        p.state,
+        p.enrolTime,
+        p.paymentType,
+        s.id      s_id,
+        s.qq      s_qq,
+        s.tel     s_tel,
+        s.name    s_name,
+        sys.id    sys_id,
+        sys.name  sys_name,
+        sys.intro sys_intro,
+        g.id      g_id,
+        g.name    g_name,
+        salesman.id salesman_id,
+        salesman.realname salesman_realname
+    </sql>
+
+    <sql id="base_table">
+        payment p
+        LEFT JOIN student s ON p.student_id = s.id
+        LEFT JOIN systemdictionaryitem sys ON p.cheapWay_id = sys.id
+        LEFT JOIN grade g ON p.grade_id = g.id
+        LEFT JOIN employee salesman ON s.salesman_id = salesman.id
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <if test="stateId != null and stateId >= 0">
+                and p.state = #{stateId}
+            </if>
+            <if test="studentId != null and studentId > 0">
+                and s.id = #{studentId}
+            </if>
+            <if test="salesmanId != null and salesmanId > 0">
+                and s.salesman_id = #{salesmanId}
+            </if>
+            <if test="paymentType != null">
+                and p.paymentType = #{paymentType}
+            </if>
+                and s.turn = true
+        </where>
+    </sql>
+
+    <select id="queryCount" resultType="long">
+        select count(p.id)
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select
+        <include refid="base_column"/>
+        from
+        <include refid="base_table"/>
+        <include refid="base_where"/>
+        limit #{start},#{rows}
+    </select>
+
+    <select id="selectbyPrimaryEmployeeId" resultMap="BaseResultMap">
+        select *
+        from payment p join student s on p.student_id = s.id
+        join employee e on s.salesman_id = e.id
+        where e.id = #{EmpId}
+    </select>
+
+    <update id="turnGrade">
+        update payment set grade_id = #{gradeId} where id = #{paymentId}
+    </update>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap">
+        select * from payment p join student s on p.student_id = s.id where s.id = #{studentId}
+    </select>
+
+</mapper>

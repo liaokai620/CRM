@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com._520it.crm.mapper.DepartmentMapper">
+    <resultMap id="BaseResultMap" type="com._520it.crm.domain.Department">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sn" property="sn"/>
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey">
+        delete from department where id = #{id}
+    </delete>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into department (name, sn) values (#{name},#{sn})
+    </insert>
+
+    <update id="updateByPrimaryKey">
+        update department set name = #{name}, sn = #{sn} where id = #{id}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select id, name,sn from department where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, name, sn from department
+    </select>
+
+    <select id="queryCount" resultType="long">
+        select count(id) from department
+    </select>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        select id, name, sn from department
+        limit #{start}, #{rows}
+    </select>
+
+</mapper>
